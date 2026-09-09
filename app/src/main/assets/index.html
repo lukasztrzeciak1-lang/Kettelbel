@@ -1,23 +1,186 @@
-<!DOCTYPE html><html lang="pl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#060b16"><meta name="apple-mobile-web-app-capable" content="yes"><title>Kettlebell 220</title><style>
-:root{--bg:#060b16;--card:#111827;--soft:#1f2937;--text:#f8fafc;--muted:#9ca3af;--accent:#facc15;--ok:#22c55e;--danger:#ef4444;--blue:#38bdf8}*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(180deg,#0f172a,#020617);color:var(--text);min-height:100vh}.wrap{max-width:980px;margin:auto;padding:12px 12px 90px}.hero,.card{background:rgba(17,24,39,.96);border:1px solid #273449;border-radius:16px;padding:14px;margin-bottom:12px}h1{margin:0 0 5px}.goal{color:var(--accent);font-weight:900}.muted{color:var(--muted)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}select,input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #374151;background:#0b1220;color:#fff;margin-top:5px}.btn{border:0;border-radius:13px;padding:14px 16px;font-weight:900;min-height:50px;background:var(--accent);color:#111827}.btn.ok{background:var(--ok)}.btn.secondary{background:#334155;color:#fff}.btn.danger{background:var(--danger);color:#fff}.big{width:100%;font-size:19px}.warm li{margin:9px 0}.warm input{width:auto}.history table{width:100%;border-collapse:collapse;font-size:13px}.history th,.history td{padding:7px;border-bottom:1px solid #273449;text-align:left}.statbox{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}.stat{background:#0b1220;border-radius:12px;padding:10px;text-align:center}.stat b{font-size:22px;color:var(--accent)}canvas{width:100%;height:240px;background:#0b1220;border-radius:12px}.nav{position:fixed;left:0;right:0;bottom:0;background:#0b1220;border-top:1px solid #273449;display:flex;z-index:20}.nav button{flex:1;background:none;border:0;color:#cbd5e1;padding:12px 4px;font-weight:800}.nav button.active{color:var(--accent)}.tab{display:none}.tab.active{display:block}#workoutMode{position:fixed;inset:0;background:radial-gradient(circle at top,#15213b,#050914 55%,#000);z-index:9999;display:none;flex-direction:column;padding:16px;overflow:auto}#workoutMode.active{display:flex}.wm-top{display:flex;justify-content:space-between}.wm-close{background:#1f2937;color:#fff;border:0;border-radius:12px;width:50px;height:50px}.wm-main{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}.wm-hand{font-size:34px;font-weight:900}.left{color:var(--accent)}.right{color:var(--blue)}.wm-time{font-size:clamp(78px,24vw,150px);font-weight:900;font-variant-numeric:tabular-nums}.repbox{display:flex;gap:10px;align-items:center;margin:18px}.repcount{font-size:56px;font-weight:900;min-width:100px}.repbtn{width:68px;height:58px;border:0;border-radius:16px;font-size:22px;font-weight:900;background:#273449;color:#fff}.controls{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:650px}.controls .full{grid-column:span 2}.save-panel{display:none;width:100%;max-width:650px;background:#101827;border:1px solid #293548;border-radius:16px;padding:14px;margin-top:14px}.save-panel.show{display:block}.progress{width:100%;height:8px;background:#1e293b;border-radius:8px;overflow:hidden}.progress div{height:100%;background:var(--accent);width:0}.course{font-weight:900;font-size:18px}.course.good{color:#22c55e}.course.mid{color:#facc15}.course.bad{color:#fb7185}@media(max-width:600px){.statbox{grid-template-columns:1fr}.hero h1{font-size:24px}}</style></head><body><div class="wrap"><section class="hero"><h1>Kettlebell 220</h1><div class="goal">CEL: 220 × 24 kg / 10:00 / 1 zmiana ręki</div><div class="muted">Plan do zawodów – marzec 2027</div></section><section id="today" class="tab active"><div class="card"><h2>Dzisiejszy trening</h2><div class="grid"><div><label>Tydzień planu</label><select id="week"></select></div><div><label>Trening</label><select id="session"><option value="A">A – długi set</option><option value="B">B – ciężar 28 kg</option><option value="C">C – tempo</option></select></div></div><div id="planBox" style="margin:12px 0"></div><button class="btn ok big" onclick="openWorkoutMode()">▶ START TRENINGU</button></div><div class="card"><h2>Rozgrzewka 10–12 min</h2><ul class="warm" id="warmupList"></ul><button class="btn secondary" onclick="resetWarmup()">Wyczyść</button></div></section><section id="plan" class="tab"><div class="card"><h2>Plan do marca 2027</h2><div id="fullPlan"></div></div></section><section id="progressTab" class="tab"><div class="card"><h2>Progres</h2><div class="statbox"><div class="stat"><span>Najlepsze 24 kg</span><br><b id="best24">–</b></div><div class="stat"><span>Najdłuższy set</span><br><b id="longest">–</b></div><div class="stat"><span>Prognoza 10 min</span><br><b id="forecast">–</b></div></div><p id="course" class="course"></p><canvas id="chart" width="900" height="260"></canvas></div></section><section id="historyTab" class="tab"><div class="card history"><h2>Historia</h2><div style="overflow:auto"><table><thead><tr><th>Data</th><th>Tydz.</th><th>kg</th><th>Czas</th><th>Powt.</th><th>Tempo</th><th>RPE</th><th>Uwagi</th></tr></thead><tbody id="historyBody"></tbody></table></div><div style="display:flex;gap:8px;margin-top:10px"><button class="btn secondary" onclick="exportData()">Eksport</button><button class="btn danger" onclick="clearHistory()">Wyczyść</button></div></div></section></div><nav class="nav"><button class="active" onclick="tab('today',this)">TRENING</button><button onclick="tab('plan',this)">PLAN</button><button onclick="tab('progressTab',this)">PROGRES</button><button onclick="tab('historyTab',this)">HISTORIA</button></nav><section id="workoutMode"><div class="wm-top"><div><b id="wmPlan"></b><div class="muted" id="wmTarget"></div></div><button class="wm-close" onclick="closeWorkoutMode()">✕</button></div><div class="wm-main"><div id="wmHand" class="wm-hand left">LEWA RĘKA</div><div id="wmTime" class="wm-time">06:00</div><div><b id="wmPace"></b> • oczekiwane: <b id="wmExpected">0</b></div><div class="progress" style="max-width:650px;margin-top:14px"><div id="wmBar"></div></div><div class="repbox"><button class="repbtn" onclick="changeReps(-1)">−1</button><div class="repcount" id="wmReps">0</div><button class="repbtn" onclick="changeReps(1)">+1</button><button class="repbtn" onclick="changeReps(5)">+5</button></div><div id="wmStatus" class="muted">Gotowy</div><div class="controls" style="margin-top:16px"><button id="startBtn" class="btn ok full" onclick="toggleTimer()">START</button><button class="btn" style="background:#38bdf8" onclick="manualSwitch()">ZMIANA RĘKI</button><button class="btn secondary" onclick="resetWorkoutTimer()">RESET</button><button class="btn danger full" onclick="finishWorkout()">STOP / ZAKOŃCZ</button></div><div id="savePanel" class="save-panel"><h3>Zapis treningu</h3><div class="grid"><div><label>Powtórzenia</label><input id="saveReps" type="number"></div><div><label>RPE 1–10</label><input id="saveRpe" type="number" min="1" max="10" value="7"></div><div><label>Lewa</label><input id="saveLeft" type="number"></div><div><label>Prawa</label><input id="saveRight" type="number"></div></div><label>Uwagi</label><input id="saveNotes" placeholder="np. chwyt lewej od 4:20"><button class="btn big" style="margin-top:10px" onclick="saveFromWorkout()">ZAPISZ</button></div></div></section><script>
-const blocks=[{m:'Wrzesień',weeks:[[6,17,6,1,13,2,19],[6,18,6,1,14,2,20],[7,17,4,1.5,15,2.5,20],[7,18,5,1,12,2,20]]},{m:'Październik',weeks:[[7,18,5,1.5,14,2.5,20],[8,17,4,2,14,2.5,20],[8,18,4,2,15,3,20],[8,18,4,1.5,13,2,20]]},{m:'Listopad',weeks:[[8,18,4,2,15,3,20],[8,19,4,2,15,3,21],[9,18,3,2.5,15,3,21],[8,18,4,1.5,13,2,20]]},{m:'Grudzień',weeks:[[9,18,3,2.5,15,3,21],[9,19,3,3,15,3,21],[10,18,3,3,15,3,21],[8,18,4,1.5,13,2,20]]},{m:'Styczeń',weeks:[[10,19,3,3,16,3,21],[10,19,3,3,16,3,22],[10,20,2,4,15,4,21],[8,18,4,1.5,13,2,20]]},{m:'Luty',weeks:[[10,20,2,4,16,4,22],[10,21,2,4,16,4,22],[10,21,1,5,15,5,22],[8,19,4,1.5,13,2,20]]},{m:'Marzec',weeks:[[10,20,3,1.5,12,3,21],[10,22,2,1,12,2,20]]}];
-const plans={};let wi=1;blocks.forEach(b=>b.weeks.forEach(x=>{const [longMin,longPace,bSets,bMin,bPace,cMin,cPace]=x;plans[wi]={month:b.m,A:{text:`24 kg – ${longMin} min, 1 zmiana w połowie`,pace:longPace,target:Math.round(longMin*longPace),work:longMin,sw:longMin/2,kg:24},B:{text:`28 kg – ${bSets}×${bMin} min`,pace:bPace,target:`${bPace}/min`,work:bMin,sw:0,kg:28},C:{text:`24 kg – interwały ${cMin} min`,pace:cPace,target:`${Math.round(cMin*cPace)}/serię`,work:cMin,sw:cMin/2,kg:24}};wi++}));
-const warmup=['2–3 min lekki ergometr / trucht / pajacyki','Krążenia ramion + 2×15 band pull-apart','10 hip hinge + 10 przysiadów + 5 wykroków z rotacją/stronę','Nadgarstki: krążenia + otwieranie i zaciskanie dłoni','16 kg: 2×10–15 swingów','Rwanie: 16 kg 5/5 → 20 kg 5/5 → 24 kg 3/3'];
-const $=id=>document.getElementById(id);let interval=null,running=false,remaining=0,totalSec=0,switchSec=0,switchFired=false,manualRight=false,reps=0,actualElapsed=0;
-function init(){for(let i=1;i<=26;i++)$('week').innerHTML+=`<option value="${i}">Tydzień ${i} – ${plans[i].month}</option>`;warmup.forEach((w,i)=>$('warmupList').innerHTML+=`<li><label><input type="checkbox"> ${w}</label></li>`);$('week').addEventListener('change',loadPlan);$('session').addEventListener('change',loadPlan);renderFullPlan();loadPlan();renderHistory()}
-function tab(id,btn){document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));$(id).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));btn.classList.add('active');if(id==='progressTab')renderProgress()}
-function loadPlan(){const w=+$('week').value||1,s=$('session').value,p=plans[w][s];$('planBox').innerHTML=`<b>${p.text}</b><br><span class="muted">${p.kg} kg • tempo ${p.pace}/min • cel ${p.target}</span>`}
-function renderFullPlan(){let h='';Object.keys(plans).forEach(k=>{let p=plans[k];h+=`<div style="padding:10px 0;border-bottom:1px solid #273449"><b>Tydzień ${k} – ${p.month}</b><br>A: ${p.A.text}, ${p.A.pace}/min<br>B: ${p.B.text}, ${p.B.pace}/min<br>C: ${p.C.text}, ${p.C.pace}/min</div>`});$('fullPlan').innerHTML=h}
-function resetWarmup(){document.querySelectorAll('.warm input').forEach(x=>x.checked=false)}function fmt(sec){sec=Math.max(0,Math.round(sec));return String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0')}
-function beep(){try{const AC=window.AudioContext||window.webkitAudioContext,a=new AC(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);g.gain.value=.2;o.start();o.stop(a.currentTime+.2)}catch(e){}}
-function openWorkoutMode(){const w=+$('week').value,s=$('session').value,p=plans[w][s];totalSec=Math.round(p.work*60);switchSec=Math.round(p.sw*60);remaining=totalSec;actualElapsed=0;switchFired=false;manualRight=false;reps=0;$('wmPlan').textContent=`Tydzień ${w} • ${p.month} • ${s}`;$('wmTarget').textContent=`${p.kg} kg • ${p.text}`;$('wmPace').textContent=`${p.pace}/min`;$('wmReps').textContent='0';$('savePanel').classList.remove('show');updateWorkoutUI();$('workoutMode').classList.add('active');document.body.style.overflow='hidden'}
-function closeWorkoutMode(){pauseTimer();$('workoutMode').classList.remove('active');document.body.style.overflow=''}function toggleTimer(){running?pauseTimer():startTimer()}
-function startTimer(){if(running)return;if(remaining<=0)resetWorkoutTimer();running=true;$('startBtn').textContent='PAUZA';const started=Date.now()-actualElapsed*1000;interval=setInterval(()=>{actualElapsed=Math.floor((Date.now()-started)/1000);remaining=Math.max(0,totalSec-actualElapsed);if(switchSec>0&&!switchFired&&actualElapsed>=switchSec){switchFired=true;manualRight=true;beep()}if(remaining<=0){pauseTimer();beep();$('savePanel').classList.add('show');$('saveReps').value=reps}updateWorkoutUI()},200)}
-function pauseTimer(){clearInterval(interval);running=false;$('startBtn').textContent='START'}function resetWorkoutTimer(){pauseTimer();const p=plans[+$('week').value][$('session').value];totalSec=Math.round(p.work*60);switchSec=Math.round(p.sw*60);remaining=totalSec;actualElapsed=0;switchFired=false;manualRight=false;reps=0;$('wmReps').textContent='0';$('savePanel').classList.remove('show');updateWorkoutUI()}
-function manualSwitch(){manualRight=!manualRight;switchFired=true;beep();updateWorkoutUI()}function updateWorkoutUI(){const p=plans[+$('week').value][$('session').value];$('wmTime').textContent=fmt(remaining);const right=manualRight||(switchSec>0&&actualElapsed>=switchSec);$('wmHand').textContent=right?'PRAWA RĘKA':'LEWA RĘKA';$('wmHand').className='wm-hand '+(right?'right':'left');$('wmExpected').textContent=Math.floor(actualElapsed/60*p.pace);$('wmBar').style.width=(totalSec?Math.min(100,actualElapsed/totalSec*100):0)+'%';$('wmStatus').textContent=running?'Praca trwa':'Gotowy / pauza'}function changeReps(n){reps=Math.max(0,reps+n);$('wmReps').textContent=reps}function finishWorkout(){pauseTimer();$('savePanel').classList.add('show');$('saveReps').value=reps}
-function saveFromWorkout(){const w=+$('week').value,s=$('session').value,p=plans[w][s],duration=(actualElapsed/60)||p.work,item={date:new Date().toISOString().slice(0,10),session:s,week:w,month:p.month,kg:p.kg,duration:+duration.toFixed(2),reps:+$('saveReps').value,left:+$('saveLeft').value||0,right:+$('saveRight').value||0,rpe:+$('saveRpe').value,notes:$('saveNotes').value};if(!item.reps){alert('Wpisz liczbę powtórzeń.');return}const arr=JSON.parse(localStorage.getItem('kbHistory')||'[]');arr.unshift(item);localStorage.setItem('kbHistory',JSON.stringify(arr));renderHistory();$('wmStatus').textContent='Zapisano ✓';$('savePanel').classList.remove('show')}
-function renderHistory(){const arr=JSON.parse(localStorage.getItem('kbHistory')||'[]');$('historyBody').innerHTML='';arr.forEach(x=>{$('historyBody').innerHTML+=`<tr><td>${x.date}</td><td>${x.week}${x.session}</td><td>${x.kg}</td><td>${x.duration}</td><td>${x.reps}</td><td>${(x.reps/x.duration).toFixed(1)}</td><td>${x.rpe||''}</td><td>${x.notes||''}</td></tr>`})}
-function renderProgress(){const arr=JSON.parse(localStorage.getItem('kbHistory')||'[]').filter(x=>x.kg===24&&x.duration).reverse();if(!arr.length){$('best24').textContent='–';$('longest').textContent='–';$('forecast').textContent='–';$('course').textContent='Zapisz pierwsze treningi 24 kg – wtedy pokażę trend.';drawChart([]);return}const best=[...arr].sort((a,b)=>(b.reps/b.duration)-(a.reps/a.duration))[0],long=[...arr].sort((a,b)=>b.duration-a.duration)[0];const useful=arr.filter(x=>x.duration>=5);const last=useful[useful.length-1]||best;let factor=last.duration>=9?.98:last.duration>=8?.96:last.duration>=7?.94:last.duration>=6?.92:.90;const forecast=Math.round((last.reps/last.duration)*10*factor);$('best24').textContent=`${best.reps} / ${best.duration}m`;$('longest').textContent=`${long.duration} min`;$('forecast').textContent=forecast;const c=$('course');if(forecast>=210){c.textContent='Kurs bardzo dobry – 220 jest w zasięgu.';c.className='course good'}else if(forecast>=190){c.textContent='Jesteś na kursie, ale trzeba dalej wydłużać set i podnosić tempo.';c.className='course mid'}else{c.textContent='Na razie najważniejsze jest zbudowanie pełnych 10 minut. Bez gonienia wyniku na siłę.';c.className='course bad'}drawChart(arr)}
-function drawChart(arr){const c=$('chart'),ctx=c.getContext('2d'),W=c.width,H=c.height;ctx.clearRect(0,0,W,H);ctx.strokeStyle='#334155';ctx.lineWidth=1;for(let y=40;y<H-20;y+=40){ctx.beginPath();ctx.moveTo(40,y);ctx.lineTo(W-20,y);ctx.stroke()}if(!arr.length)return;const vals=arr.map(x=>x.reps/x.duration),max=Math.max(24,...vals),min=Math.min(14,...vals);ctx.strokeStyle='#facc15';ctx.lineWidth=4;ctx.beginPath();vals.forEach((v,i)=>{const x=50+i*(W-90)/Math.max(1,vals.length-1),y=H-35-(v-min)/(max-min||1)*(H-70);i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.stroke();ctx.fillStyle='#f8fafc';ctx.font='20px Arial';ctx.fillText('tempo / min',45,25);ctx.fillStyle='#38bdf8';const y22=H-35-(22-min)/(max-min||1)*(H-70);ctx.fillRect(40,y22,W-60,2);ctx.fillText('22/min = 220',W-180,Math.max(20,y22-6))}
-function clearHistory(){if(confirm('Usunąć historię?')){localStorage.removeItem('kbHistory');renderHistory();renderProgress()}}function exportData(){const blob=new Blob([localStorage.getItem('kbHistory')||'[]'],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='kettlebell_historia.json';a.click()}window.addEventListener('load',init);
-</script></body></html>
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Kettlebell 220 Coach</title>
+<style>
+:root{--bg:#07111f;--card:#101827;--soft:#1b2638;--text:#f8fafc;--muted:#94a3b8;--accent:#facc15;--ok:#22c55e;--danger:#ef4444;--blue:#38bdf8}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#0f172a,#020617);color:var(--text);font-family:Arial,sans-serif;min-height:100vh}
+.wrap{max-width:980px;margin:auto;padding:12px 12px 88px}.card{background:rgba(16,24,39,.96);border:1px solid #263449;border-radius:16px;padding:14px;margin-bottom:12px}
+h1,h2,h3{margin-top:0}.muted{color:var(--muted)}.goal{color:var(--accent);font-weight:900}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+input,select,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #344155;background:#0b1220;color:#fff;margin-top:5px}
+button{border:0;border-radius:12px;padding:13px 15px;font-weight:800;cursor:pointer}.btn{background:var(--accent);color:#111827}.ok{background:var(--ok)}.secondary{background:#334155;color:#fff}.danger{background:var(--danger);color:#fff}.blue{background:var(--blue);color:#06202b}.full{width:100%}
+.badge{display:inline-block;padding:5px 9px;border-radius:999px;background:#1e293b;color:#cbd5e1;font-size:12px}.hidden{display:none!important}
+.nav{position:fixed;left:0;right:0;bottom:0;background:#08111e;border-top:1px solid #263449;display:flex;z-index:20}.nav button{flex:1;background:none;color:#cbd5e1;padding:12px 4px}.nav button.active{color:var(--accent)}
+.tab{display:none}.tab.active{display:block}.listitem{padding:12px 0;border-bottom:1px solid #263449}.listitem:last-child{border-bottom:0}.big{font-size:19px}
+.timerOverlay{position:fixed;inset:0;background:radial-gradient(circle at top,#15213b,#040814 60%,#000);z-index:9999;display:none;flex-direction:column;padding:16px}.timerOverlay.show{display:flex}
+.time{font-size:clamp(78px,24vw,150px);font-weight:900;text-align:center;font-variant-numeric:tabular-nums}.center{display:flex;flex:1;flex-direction:column;justify-content:center;align-items:center}
+.rep{font-size:54px;font-weight:900}.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1}.status{padding:10px;border-radius:12px;background:#0b1220}.good{color:#4ade80}.warn{color:#facc15}
+.small{font-size:12px}.code{font-family:monospace;word-break:break-all;background:#0b1220;padding:10px;border-radius:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <h1>Kettlebell 220</h1>
+    <div class="goal">CEL: 220 × 24 kg / 10:00 / 1 zmiana ręki</div>
+    <div class="muted">Wersja Zawodnik + Trener</div>
+  </div>
+
+  <section id="authBox" class="card">
+    <h2>Logowanie</h2>
+    <div class="grid">
+      <div><label>E-mail</label><input id="email" type="email"></div>
+      <div><label>Hasło</label><input id="password" type="password"></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <button class="btn ok" onclick="login()">ZALOGUJ</button>
+      <button class="btn secondary" onclick="toggleRegister()">NOWE KONTO</button>
+    </div>
+    <div id="registerBox" class="hidden" style="margin-top:12px">
+      <div class="grid">
+        <div><label>Imię / nazwa</label><input id="displayName"></div>
+        <div><label>Rola</label><select id="role"><option value="athlete">Zawodnik</option><option value="coach">Trener</option></select></div>
+      </div>
+      <button class="btn full" style="margin-top:10px" onclick="registerUser()">UTWÓRZ KONTO</button>
+    </div>
+    <div id="authMsg" class="muted" style="margin-top:10px"></div>
+  </section>
+
+  <section id="appBox" class="hidden">
+    <div class="card">
+      <div class="row">
+        <div><b id="who"></b><div id="roleLabel" class="muted"></div></div>
+        <button class="secondary" onclick="logout()">Wyloguj</button>
+      </div>
+    </div>
+
+    <section id="athleteHome" class="tab active">
+      <div class="card">
+        <h2>Trening od trenera</h2>
+        <div id="athleteWorkoutList"><div class="muted">Ładowanie...</div></div>
+      </div>
+      <div class="card">
+        <h3>Twój ID zawodnika</h3>
+        <div class="muted">Podaj go trenerowi tylko raz.</div>
+        <div id="athleteId" class="code"></div>
+      </div>
+    </section>
+
+    <section id="athleteHistory" class="tab">
+      <div class="card"><h2>Historia wyników</h2><div id="historyList"></div></div>
+    </section>
+
+    <section id="coachAthletes" class="tab">
+      <div class="card">
+        <h2>Zawodnicy</h2>
+        <label>ID zawodnika</label><input id="newAthleteId" placeholder="np. 123e4567-e89b-12d3-a456-426614174000">
+        <button class="btn full" style="margin-top:10px" onclick="linkAthlete()">DODAJ ZAWODNIKA</button>
+        <div id="coachMsg" class="muted" style="margin-top:8px"></div>
+        <div id="athletesList" style="margin-top:10px"></div>
+      </div>
+    </section>
+
+    <section id="coachPlan" class="tab">
+      <div class="card">
+        <h2>Ułóż trening</h2>
+        <div class="grid">
+          <div><label>Zawodnik</label><select id="coachAthleteSelect"></select></div>
+          <div><label>Data</label><input id="scheduledFor" type="date"></div>
+          <div><label>Nazwa</label><input id="wTitle" value="Snatch 24 kg"></div>
+          <div><label>Ciężar kg</label><input id="wKg" type="number" value="24"></div>
+          <div><label>Czas sek.</label><input id="wDuration" type="number" value="600"></div>
+          <div><label>Cel powt.</label><input id="wTargetReps" type="number" value="190"></div>
+          <div><label>Tempo / min</label><input id="wRpm" type="number" step="0.1" value="19"></div>
+          <div><label>Serie</label><input id="wSets" type="number" value="1"></div>
+          <div><label>Przerwa sek.</label><input id="wRest" type="number" value="0"></div>
+        </div>
+        <label>Zmiana ręki / zasada</label><input id="wSwitch" value="1 zmiana w połowie czasu">
+        <label>Instrukcje / komentarz trenera</label><textarea id="wInstructions" rows="3" placeholder="np. nie przyspieszaj pierwszych 3 minut"></textarea>
+        <button class="btn ok full" style="margin-top:10px" onclick="createWorkout()">ZAPISZ TRENING</button>
+        <div id="planMsg" class="muted" style="margin-top:8px"></div>
+      </div>
+    </section>
+
+    <section id="coachResults" class="tab">
+      <div class="card"><h2>Wyniki zawodników</h2><div id="coachResultsList"></div></div>
+    </section>
+  </section>
+</div>
+
+<nav id="athleteNav" class="nav hidden">
+  <button class="active" onclick="showTab('athleteHome',this)">TRENING</button>
+  <button onclick="showTab('athleteHistory',this);loadHistory()">HISTORIA</button>
+</nav>
+<nav id="coachNav" class="nav hidden">
+  <button class="active" onclick="showTab('coachAthletes',this);loadAthletes()">ZAWODNICY</button>
+  <button onclick="showTab('coachPlan',this);loadAthletes()">PLAN</button>
+  <button onclick="showTab('coachResults',this);loadCoachResults()">WYNIKI</button>
+</nav>
+
+<div id="timer" class="timerOverlay">
+  <div class="row"><div><b id="timerTitle"></b><div id="timerMeta" class="muted"></div></div><button class="secondary" onclick="closeTimer()">✕</button></div>
+  <div class="center">
+    <div id="timerTime" class="time">10:00</div>
+    <div class="row" style="width:100%;max-width:640px;align-items:center">
+      <button class="secondary" onclick="changeReps(-1)">−1</button>
+      <div id="repCount" class="rep" style="text-align:center">0</div>
+      <button class="secondary" onclick="changeReps(1)">+1</button>
+      <button class="secondary" onclick="changeReps(5)">+5</button>
+    </div>
+    <div class="row" style="width:100%;max-width:640px;margin-top:12px">
+      <button id="timerStart" class="ok" onclick="toggleTimer()">START</button>
+      <button class="danger" onclick="finishTimer()">ZAKOŃCZ</button>
+    </div>
+    <div id="saveResultBox" class="card hidden" style="width:100%;max-width:640px;margin-top:14px">
+      <h3>Zapis wyniku</h3>
+      <div class="grid">
+        <div><label>RPE 1–10</label><input id="resultRpe" type="number" min="1" max="10" value="7"></div>
+        <div><label>Ograniczenie</label><select id="resultLimiter"><option>brak</option><option>chwyt</option><option>oddech</option><option>przedramię</option><option>bark</option><option>technika</option></select></div>
+        <div><label>Lewa</label><input id="resultLeft" type="number"></div>
+        <div><label>Prawa</label><input id="resultRight" type="number"></div>
+      </div>
+      <label>Uwagi</label><textarea id="resultNotes" rows="2"></textarea>
+      <button class="btn full" style="margin-top:10px" onclick="saveResult()">ZAPISZ I WYŚLIJ TRENEROWI</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SB_URL='https://ogelfqdoilzohwhpjqug.supabase.co';
+const SB_KEY='sb_publishable_XC3UGoOyuis0FcijJ63mZA_APSYkDFd';
+let session=JSON.parse(localStorage.getItem('kb_session')||'null');
+let profile=null, linkedAthletes=[], currentWorkout=null;
+let timerInt=null, remaining=0, elapsed=0, reps=0, running=false;
+
+function msg(id,t){document.getElementById(id).textContent=t||''}
+function hdr(auth=true){const h={'apikey':SB_KEY,'Content-Type':'application/json'};if(auth&&session?.access_token)h.Authorization='Bearer '+session.access_token;return h}
+async function api(path,opt={}){const r=await fetch(SB_URL+path,{...opt,headers:{...hdr(opt.auth!==false),...(opt.headers||{})}});const txt=await r.text();let data=null;try{data=txt?JSON.parse(txt):null}catch{data=txt}if(!r.ok)throw new Error(data?.msg||data?.message||data?.error_description||data?.hint||txt||('HTTP '+r.status));return data}
+function toggleRegister(){document.getElementById('registerBox').classList.toggle('hidden')}
+async function registerUser(){try{msg('authMsg','Tworzę konto...');const body={email:email.value.trim(),password:password.value,data:{role:role.value,display_name:displayName.value.trim()||email.value.trim()}};const d=await api('/auth/v1/signup',{method:'POST',body:JSON.stringify(body),auth:false});msg('authMsg',d?.session?'Konto utworzone. Loguję...':'Konto utworzone. Jeśli Supabase wymaga potwierdzenia e-mail, potwierdź wiadomość i zaloguj się.');if(d?.access_token){session=d;saveSession();await boot()}}catch(e){msg('authMsg','Błąd: '+e.message)}}
+async function login(){try{msg('authMsg','Logowanie...');const d=await api('/auth/v1/token?grant_type=password',{method:'POST',body:JSON.stringify({email:email.value.trim(),password:password.value}),auth:false});session=d;saveSession();await boot()}catch(e){msg('authMsg','Błąd: '+e.message)}}
+function saveSession(){localStorage.setItem('kb_session',JSON.stringify(session))}
+function logout(){localStorage.removeItem('kb_session');session=null;profile=null;location.reload()}
+async function boot(){if(!session?.access_token)return;try{const u=session.user?.id;const p=await api('/rest/v1/profiles?id=eq.'+encodeURIComponent(u)+'&select=*');profile=p?.[0];if(!profile)throw new Error('Brak profilu');authBox.classList.add('hidden');appBox.classList.remove('hidden');who.textContent=profile.display_name||session.user?.email||'Użytkownik';roleLabel.textContent=profile.role==='coach'?'Trener':'Zawodnik';if(profile.role==='coach'){coachNav.classList.remove('hidden');athleteNav.classList.add('hidden');showTab('coachAthletes',coachNav.children[0]);await loadAthletes()}else{athleteNav.classList.remove('hidden');coachNav.classList.add('hidden');athleteId.textContent=session.user.id;showTab('athleteHome',athleteNav.children[0]);await loadAthleteWorkouts();await loadHistory()}}catch(e){msg('authMsg','Sesja wygasła: '+e.message);logout()}}
+function showTab(id,btn){document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));if(btn)btn.classList.add('active')}
+
+async function loadAthleteWorkouts(){try{const uid=session.user.id;const data=await api('/rest/v1/workouts?athlete_id=eq.'+uid+'&status=eq.planned&order=scheduled_for.asc&select=*');if(!data.length){athleteWorkoutList.innerHTML='<div class="muted">Brak zaplanowanych treningów od trenera.</div>';return}athleteWorkoutList.innerHTML=data.map(w=>`<div class="listitem"><div><b>${w.scheduled_for} • ${esc(w.title)}</b> <span class="badge">${w.kettlebell_kg||''} kg</span></div><div class="muted">${w.duration_seconds?Math.round(w.duration_seconds/60)+' min':''} ${w.target_rpm?'• '+w.target_rpm+'/min':''} ${w.target_reps?'• cel '+w.target_reps:''}</div><div>${esc(w.instructions||'')}</div><button class="btn ok full" style="margin-top:8px" onclick='startAssigned(${JSON.stringify(w)})'>START</button></div>`).join('')}catch(e){athleteWorkoutList.innerHTML='<div class="warn">Błąd: '+esc(e.message)+'</div>'}}
+function startAssigned(w){currentWorkout=w;remaining=w.duration_seconds||600;elapsed=0;reps=0;running=false;timerTitle.textContent=w.title;timerMeta.textContent=`${w.kettlebell_kg||''} kg • cel ${w.target_reps||'-'} • ${w.target_rpm||'-'}/min`;repCount.textContent='0';saveResultBox.classList.add('hidden');timerStart.textContent='START';updateTimer();timer.classList.add('show')}
+function closeTimer(){if(timerInt)clearInterval(timerInt);timerInt=null;running=false;timer.classList.remove('show')}
+function updateTimer(){const m=Math.floor(remaining/60),s=remaining%60;timerTime.textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')}
+function toggleTimer(){if(running){clearInterval(timerInt);timerInt=null;running=false;timerStart.textContent='WZNÓW'}else{running=true;timerStart.textContent='PAUZA';timerInt=setInterval(()=>{if(remaining>0){remaining--;elapsed++;updateTimer()}else finishTimer()},1000)}}
+function changeReps(x){reps=Math.max(0,reps+x);repCount.textContent=reps}
+function finishTimer(){if(timerInt)clearInterval(timerInt);timerInt=null;running=false;saveResultBox.classList.remove('hidden');resultLeft.value=Math.floor(reps/2);resultRight.value=reps-Math.floor(reps/2)}
+async function saveResult(){try{const body={workout_id:currentWorkout.id,athlete_id:session.user.id,reps:reps,duration_seconds:elapsed,left_reps:+resultLeft.value||null,right_reps:+resultRight.value||null,rpe:+resultRpe.value||null,limiter:resultLimiter.value,notes:resultNotes.value.trim()};await api('/rest/v1/workout_results',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify(body)});closeTimer();await loadAthleteWorkouts();await loadHistory();alert('Wynik wysłany trenerowi.')}catch(e){alert('Błąd zapisu: '+e.message)}}
+async function loadHistory(){if(profile?.role!=='athlete')return;try{const d=await api('/rest/v1/workout_results?athlete_id=eq.'+session.user.id+'&order=completed_at.desc&limit=30&select=*');historyList.innerHTML=d.length?d.map(r=>`<div class="listitem"><b>${new Date(r.completed_at).toLocaleDateString()}</b> • ${r.reps||0} powt. • RPE ${r.rpe??'-'}<div class="muted">${r.duration_seconds?Math.round(r.duration_seconds/60*10)/10+' min':''} ${esc(r.limiter||'')}</div><div>${esc(r.notes||'')}</div></div>`).join(''):'<div class="muted">Brak wyników.</div>'}catch(e){historyList.innerHTML='<div class="warn">'+esc(e.message)+'</div>'}}
+
+async function linkAthlete(){try{const athlete=newAthleteId.value.trim();if(!athlete)throw new Error('Wpisz ID zawodnika');await api('/rest/v1/coach_athletes',{method:'POST',headers:{Prefer:'resolution=ignore-duplicates,return=minimal'},body:JSON.stringify({coach_id:session.user.id,athlete_id:athlete})});msg('coachMsg','Zawodnik dodany.');newAthleteId.value='';await loadAthletes()}catch(e){msg('coachMsg','Błąd: '+e.message)}}
+async function loadAthletes(){if(profile?.role!=='coach')return;try{const links=await api('/rest/v1/coach_athletes?coach_id=eq.'+session.user.id+'&select=athlete_id');linkedAthletes=[];for(const l of links){let name=l.athlete_id;try{const p=await api('/rest/v1/profiles?id=eq.'+l.athlete_id+'&select=id,display_name,email');if(p?.[0])name=p[0].display_name||p[0].email||name}catch{}linkedAthletes.push({id:l.athlete_id,name})}athletesList.innerHTML=linkedAthletes.length?linkedAthletes.map(a=>`<div class="listitem"><b>${esc(a.name)}</b><div class="small code">${a.id}</div></div>`).join(''):'<div class="muted">Brak zawodników.</div>';coachAthleteSelect.innerHTML=linkedAthletes.map(a=>`<option value="${a.id}">${esc(a.name)}</option>`).join('');if(!scheduledFor.value)scheduledFor.value=new Date().toISOString().slice(0,10)}catch(e){athletesList.innerHTML='<div class="warn">Błąd: '+esc(e.message)+'</div>'}}
+async function createWorkout(){try{const athlete=coachAthleteSelect.value;if(!athlete)throw new Error('Najpierw dodaj zawodnika');const body={athlete_id:athlete,coach_id:session.user.id,scheduled_for:scheduledFor.value,title:wTitle.value.trim()||'Trening',kettlebell_kg:+wKg.value||null,duration_seconds:+wDuration.value||null,target_reps:+wTargetReps.value||null,sets:+wSets.value||1,rest_seconds:+wRest.value||0,target_rpm:+wRpm.value||null,hand_switch_rule:wSwitch.value.trim(),instructions:wInstructions.value.trim(),status:'planned'};await api('/rest/v1/workouts',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify(body)});msg('planMsg','Trening zapisany i dostępny u zawodnika.')}catch(e){msg('planMsg','Błąd: '+e.message)}}
+async function loadCoachResults(){try{if(!linkedAthletes.length)await loadAthletes();let out=[];for(const a of linkedAthletes){try{const r=await api('/rest/v1/workout_results?athlete_id=eq.'+a.id+'&order=completed_at.desc&limit=10&select=*');r.forEach(x=>out.push({...x,athleteName:a.name}))}catch{}}out.sort((a,b)=>new Date(b.completed_at)-new Date(a.completed_at));coachResultsList.innerHTML=out.length?out.map(r=>`<div class="listitem"><b>${esc(r.athleteName)}</b> • ${new Date(r.completed_at).toLocaleDateString()}<div>${r.reps||0} powt. • RPE ${r.rpe??'-'} • ${esc(r.limiter||'')}</div><div class="muted">${esc(r.notes||'')}</div></div>`).join(''):'<div class="muted">Brak wyników.</div>'}catch(e){coachResultsList.innerHTML='<div class="warn">'+esc(e.message)+'</div>'}}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+if(session?.access_token)boot();
+</script>
+</body>
+</html>
