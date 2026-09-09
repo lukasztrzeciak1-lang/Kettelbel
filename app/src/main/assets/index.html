@@ -1,186 +1,37 @@
 <!doctype html>
-<html lang="pl">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Kettlebell 220 Coach</title>
-<style>
-:root{--bg:#07111f;--card:#101827;--soft:#1b2638;--text:#f8fafc;--muted:#94a3b8;--accent:#facc15;--ok:#22c55e;--danger:#ef4444;--blue:#38bdf8}
-*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#0f172a,#020617);color:var(--text);font-family:Arial,sans-serif;min-height:100vh}
-.wrap{max-width:980px;margin:auto;padding:12px 12px 88px}.card{background:rgba(16,24,39,.96);border:1px solid #263449;border-radius:16px;padding:14px;margin-bottom:12px}
-h1,h2,h3{margin-top:0}.muted{color:var(--muted)}.goal{color:var(--accent);font-weight:900}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
-input,select,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #344155;background:#0b1220;color:#fff;margin-top:5px}
-button{border:0;border-radius:12px;padding:13px 15px;font-weight:800;cursor:pointer}.btn{background:var(--accent);color:#111827}.ok{background:var(--ok)}.secondary{background:#334155;color:#fff}.danger{background:var(--danger);color:#fff}.blue{background:var(--blue);color:#06202b}.full{width:100%}
-.badge{display:inline-block;padding:5px 9px;border-radius:999px;background:#1e293b;color:#cbd5e1;font-size:12px}.hidden{display:none!important}
-.nav{position:fixed;left:0;right:0;bottom:0;background:#08111e;border-top:1px solid #263449;display:flex;z-index:20}.nav button{flex:1;background:none;color:#cbd5e1;padding:12px 4px}.nav button.active{color:var(--accent)}
-.tab{display:none}.tab.active{display:block}.listitem{padding:12px 0;border-bottom:1px solid #263449}.listitem:last-child{border-bottom:0}.big{font-size:19px}
-.timerOverlay{position:fixed;inset:0;background:radial-gradient(circle at top,#15213b,#040814 60%,#000);z-index:9999;display:none;flex-direction:column;padding:16px}.timerOverlay.show{display:flex}
-.time{font-size:clamp(78px,24vw,150px);font-weight:900;text-align:center;font-variant-numeric:tabular-nums}.center{display:flex;flex:1;flex-direction:column;justify-content:center;align-items:center}
-.rep{font-size:54px;font-weight:900}.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1}.status{padding:10px;border-radius:12px;background:#0b1220}.good{color:#4ade80}.warn{color:#facc15}
-.small{font-size:12px}.code{font-family:monospace;word-break:break-all;background:#0b1220;padding:10px;border-radius:10px}
-</style>
-</head>
-<body>
-<div class="wrap">
-  <div class="card">
-    <h1>Kettlebell 220</h1>
-    <div class="goal">CEL: 220 × 24 kg / 10:00 / 1 zmiana ręki</div>
-    <div class="muted">Wersja Zawodnik + Trener</div>
-  </div>
-
-  <section id="authBox" class="card">
-    <h2>Logowanie</h2>
-    <div class="grid">
-      <div><label>E-mail</label><input id="email" type="email"></div>
-      <div><label>Hasło</label><input id="password" type="password"></div>
-    </div>
-    <div class="row" style="margin-top:10px">
-      <button class="btn ok" onclick="login()">ZALOGUJ</button>
-      <button class="btn secondary" onclick="toggleRegister()">NOWE KONTO</button>
-    </div>
-    <div id="registerBox" class="hidden" style="margin-top:12px">
-      <div class="grid">
-        <div><label>Imię / nazwa</label><input id="displayName"></div>
-        <div><label>Rola</label><select id="role"><option value="athlete">Zawodnik</option><option value="coach">Trener</option></select></div>
-      </div>
-      <button class="btn full" style="margin-top:10px" onclick="registerUser()">UTWÓRZ KONTO</button>
-    </div>
-    <div id="authMsg" class="muted" style="margin-top:10px"></div>
-  </section>
-
-  <section id="appBox" class="hidden">
-    <div class="card">
-      <div class="row">
-        <div><b id="who"></b><div id="roleLabel" class="muted"></div></div>
-        <button class="secondary" onclick="logout()">Wyloguj</button>
-      </div>
-    </div>
-
-    <section id="athleteHome" class="tab active">
-      <div class="card">
-        <h2>Trening od trenera</h2>
-        <div id="athleteWorkoutList"><div class="muted">Ładowanie...</div></div>
-      </div>
-      <div class="card">
-        <h3>Twój ID zawodnika</h3>
-        <div class="muted">Podaj go trenerowi tylko raz.</div>
-        <div id="athleteId" class="code"></div>
-      </div>
-    </section>
-
-    <section id="athleteHistory" class="tab">
-      <div class="card"><h2>Historia wyników</h2><div id="historyList"></div></div>
-    </section>
-
-    <section id="coachAthletes" class="tab">
-      <div class="card">
-        <h2>Zawodnicy</h2>
-        <label>ID zawodnika</label><input id="newAthleteId" placeholder="np. 123e4567-e89b-12d3-a456-426614174000">
-        <button class="btn full" style="margin-top:10px" onclick="linkAthlete()">DODAJ ZAWODNIKA</button>
-        <div id="coachMsg" class="muted" style="margin-top:8px"></div>
-        <div id="athletesList" style="margin-top:10px"></div>
-      </div>
-    </section>
-
-    <section id="coachPlan" class="tab">
-      <div class="card">
-        <h2>Ułóż trening</h2>
-        <div class="grid">
-          <div><label>Zawodnik</label><select id="coachAthleteSelect"></select></div>
-          <div><label>Data</label><input id="scheduledFor" type="date"></div>
-          <div><label>Nazwa</label><input id="wTitle" value="Snatch 24 kg"></div>
-          <div><label>Ciężar kg</label><input id="wKg" type="number" value="24"></div>
-          <div><label>Czas sek.</label><input id="wDuration" type="number" value="600"></div>
-          <div><label>Cel powt.</label><input id="wTargetReps" type="number" value="190"></div>
-          <div><label>Tempo / min</label><input id="wRpm" type="number" step="0.1" value="19"></div>
-          <div><label>Serie</label><input id="wSets" type="number" value="1"></div>
-          <div><label>Przerwa sek.</label><input id="wRest" type="number" value="0"></div>
-        </div>
-        <label>Zmiana ręki / zasada</label><input id="wSwitch" value="1 zmiana w połowie czasu">
-        <label>Instrukcje / komentarz trenera</label><textarea id="wInstructions" rows="3" placeholder="np. nie przyspieszaj pierwszych 3 minut"></textarea>
-        <button class="btn ok full" style="margin-top:10px" onclick="createWorkout()">ZAPISZ TRENING</button>
-        <div id="planMsg" class="muted" style="margin-top:8px"></div>
-      </div>
-    </section>
-
-    <section id="coachResults" class="tab">
-      <div class="card"><h2>Wyniki zawodników</h2><div id="coachResultsList"></div></div>
-    </section>
-  </section>
-</div>
-
-<nav id="athleteNav" class="nav hidden">
-  <button class="active" onclick="showTab('athleteHome',this)">TRENING</button>
-  <button onclick="showTab('athleteHistory',this);loadHistory()">HISTORIA</button>
-</nav>
-<nav id="coachNav" class="nav hidden">
-  <button class="active" onclick="showTab('coachAthletes',this);loadAthletes()">ZAWODNICY</button>
-  <button onclick="showTab('coachPlan',this);loadAthletes()">PLAN</button>
-  <button onclick="showTab('coachResults',this);loadCoachResults()">WYNIKI</button>
-</nav>
-
-<div id="timer" class="timerOverlay">
-  <div class="row"><div><b id="timerTitle"></b><div id="timerMeta" class="muted"></div></div><button class="secondary" onclick="closeTimer()">✕</button></div>
-  <div class="center">
-    <div id="timerTime" class="time">10:00</div>
-    <div class="row" style="width:100%;max-width:640px;align-items:center">
-      <button class="secondary" onclick="changeReps(-1)">−1</button>
-      <div id="repCount" class="rep" style="text-align:center">0</div>
-      <button class="secondary" onclick="changeReps(1)">+1</button>
-      <button class="secondary" onclick="changeReps(5)">+5</button>
-    </div>
-    <div class="row" style="width:100%;max-width:640px;margin-top:12px">
-      <button id="timerStart" class="ok" onclick="toggleTimer()">START</button>
-      <button class="danger" onclick="finishTimer()">ZAKOŃCZ</button>
-    </div>
-    <div id="saveResultBox" class="card hidden" style="width:100%;max-width:640px;margin-top:14px">
-      <h3>Zapis wyniku</h3>
-      <div class="grid">
-        <div><label>RPE 1–10</label><input id="resultRpe" type="number" min="1" max="10" value="7"></div>
-        <div><label>Ograniczenie</label><select id="resultLimiter"><option>brak</option><option>chwyt</option><option>oddech</option><option>przedramię</option><option>bark</option><option>technika</option></select></div>
-        <div><label>Lewa</label><input id="resultLeft" type="number"></div>
-        <div><label>Prawa</label><input id="resultRight" type="number"></div>
-      </div>
-      <label>Uwagi</label><textarea id="resultNotes" rows="2"></textarea>
-      <button class="btn full" style="margin-top:10px" onclick="saveResult()">ZAPISZ I WYŚLIJ TRENEROWI</button>
-    </div>
-  </div>
-</div>
-
+<html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Kettlebell 220</title><style>
+:root{--bg:#050b19;--card:#101a2d;--line:#2a3850;--txt:#f8fafc;--mut:#9aa8bd;--yel:#facc15;--green:#22c55e;--blue:#38bdf8;--red:#ef4444}*{box-sizing:border-box}body{margin:0;background:linear-gradient(#101827,#020617);color:var(--txt);font:16px Arial,sans-serif;min-height:100vh}.wrap{max-width:900px;margin:auto;padding:16px 16px 90px}.card{background:rgba(16,26,45,.97);border:1px solid var(--line);border-radius:22px;padding:18px;margin:0 0 14px}h1{font-size:42px;margin:0 0 34px}h2{font-size:28px;margin:0 0 18px}.goal{font-weight:900;color:var(--yel);font-size:20px}.mut{color:var(--mut)}button,input,select,textarea{font:inherit}input,select,textarea{width:100%;background:#081221;border:1px solid #25344b;color:white;border-radius:12px;padding:13px;margin:6px 0 12px}.btn{border:0;border-radius:14px;padding:14px 18px;font-weight:900;background:var(--yel);color:#111827}.btn.big{width:100%;font-size:18px}.btn.sec{background:#36465d;color:#fff}.btn.green{background:var(--green)}.btn.red{background:var(--red);color:#fff}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}.nav{position:fixed;bottom:0;left:0;right:0;height:68px;background:#07111e;border-top:1px solid #26364e;display:flex;z-index:50}.nav button{flex:1;border:0;background:none;color:#c7d0df;font-weight:900}.nav button.on{color:var(--yel)}.tab{display:none}.tab.on{display:block}.wk{padding:12px 0;border-bottom:1px solid #26364e;line-height:1.6}.pill{display:inline-block;background:#223149;border-radius:999px;padding:6px 10px;margin:3px 4px 3px 0}.coach{border-left:4px solid var(--blue)}.base{border-left:4px solid var(--yel)}.history-row{padding:12px 0;border-bottom:1px solid #26364e}.topline{display:flex;justify-content:space-between;gap:12px;align-items:center}.hidden{display:none!important}#auth{max-width:560px;margin:50px auto;padding:16px}.authTabs{display:flex;gap:8px;margin-bottom:12px}.authTabs button{flex:1}.timer{position:fixed;inset:0;z-index:100;background:radial-gradient(circle at top,#16233c,#020617 60%);display:none;padding:22px;overflow:auto}.timer.on{display:flex;flex-direction:column}.time{font-size:clamp(82px,24vw,150px);font-weight:900;text-align:center;margin:50px 0 10px}.hand{text-align:center;font-size:32px;font-weight:900;color:var(--yel)}.reps{text-align:center;font-size:62px;font-weight:900;margin:20px}.repBtns{display:flex;justify-content:center;gap:10px}.repBtns button{width:74px;height:58px}.timerControls{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:650px;margin:25px auto;width:100%}.timerControls .full{grid-column:span 2}.saveBox{max-width:650px;margin:auto;width:100%}@media(max-width:550px){h1{font-size:38px}.wrap{padding:12px 12px 85px}.card{padding:16px}.nav button{font-size:13px}}
+</style></head><body>
+<div id="auth"><div class="card"><h1>Kettlebell 220</h1><div class="goal">CEL: 220 × 24 kg / 10:00 / 1 zmiana ręki</div><p class="mut">Zaloguj się na swoje konto.</p><label>E-mail</label><input id="email" type="email"><label>Hasło</label><input id="pass" type="password"><button class="btn big" onclick="login()">ZALOGUJ</button><p id="authMsg" class="mut"></p></div></div>
+<div id="app" class="hidden"><div class="wrap"><div class="card"><h1>Kettlebell 220</h1><div class="goal">CEL: 220 × 24 kg / 10:00 / 1 zmiana ręki</div><div class="mut">Plan bazowy + trener online</div></div><div class="card topline"><div><b id="name">Zawodnik</b><div class="mut" id="role">Zawodnik</div></div><button class="btn sec" onclick="logout()">Wyloguj</button></div>
+<section id="training" class="tab on"><div id="coachCard" class="card coach"><h2>Trening od trenera</h2><div id="coachBox" class="mut">Sprawdzam plan trenera...</div></div><div class="card base"><h2>Plan bazowy – dzisiaj</h2><div class="grid"><div><label>Tydzień</label><select id="week"></select></div><div><label>Trening</label><select id="session"><option value="A">A – długi set</option><option value="B">B – 28 kg</option><option value="C">C – tempo</option></select></div></div><div id="baseBox" style="margin:14px 0"></div><button class="btn green big" onclick="startBase()">▶ START TRENINGU BAZOWEGO</button></div><div class="card"><h2>Rozgrzewka 10–12 min</h2><div class="wk">☐ 2–3 min lekki ergometr / trucht / pajacyki</div><div class="wk">☐ Krążenia ramion + 2×15 band pull-apart</div><div class="wk">☐ 10 hip hinge + 10 przysiadów + wykroki z rotacją</div><div class="wk">☐ Nadgarstki i dłonie</div><div class="wk">☐ 16 kg: 2×10–15 swingów</div><div class="wk">☐ Rwanie: 16 kg 5/5 → 20 kg 5/5 → 24 kg 3/3</div></div></section>
+<section id="plan" class="tab"><div class="card"><h2>Plan do marca 2027</h2><div id="fullPlan"></div></div></section>
+<section id="history" class="tab"><div class="card"><div class="topline"><h2>Historia</h2><button class="btn sec" onclick="loadHistory()">Odśwież</button></div><div id="histBox" class="mut">Ładowanie...</div></div></section>
+<section id="account" class="tab"><div class="card"><h2>Konto zawodnika</h2><div class="mut">Twój ID zawodnika – podajesz trenerowi tylko raz:</div><input id="athleteId" readonly><p class="mut">Historia treningów jest od teraz zapisywana w Supabase, więc po ponownej instalacji wróci po zalogowaniu na to samo konto.</p></div></section></div>
+<nav class="nav"><button class="on" onclick="showTab('training',this)">TRENING</button><button onclick="showTab('plan',this)">PLAN</button><button onclick="showTab('history',this)">HISTORIA</button><button onclick="showTab('account',this)">KONTO</button></nav></div>
+<div id="timer" class="timer"><div class="topline"><div><b id="timerTitle"></b><div id="timerTarget" class="mut"></div></div><button class="btn sec" onclick="closeTimer()">✕</button></div><div id="hand" class="hand">LEWA RĘKA</div><div id="clock" class="time">00:00</div><div class="reps" id="reps">0</div><div class="repBtns"><button class="btn sec" onclick="rep(-1)">−1</button><button class="btn" onclick="rep(1)">+1</button><button class="btn" onclick="rep(5)">+5</button></div><div class="timerControls"><button id="play" class="btn green full" onclick="toggleTimer()">START</button><button class="btn" onclick="switchHand()">ZMIANA RĘKI</button><button class="btn sec" onclick="resetTimer()">RESET</button><button class="btn red full" onclick="finishTimer()">STOP / ZAKOŃCZ</button></div><div id="saveBox" class="card saveBox hidden"><h2>Zapis treningu</h2><div class="grid"><div><label>Powtórzenia</label><input id="saveReps" type="number"></div><div><label>RPE 1–10</label><input id="saveRpe" type="number" min="1" max="10" value="7"></div><div><label>Lewa</label><input id="saveLeft" type="number"></div><div><label>Prawa</label><input id="saveRight" type="number"></div></div><label>Uwagi</label><textarea id="saveNotes"></textarea><button class="btn big" onclick="saveWorkout()">ZAPISZ W CHMURZE</button><p id="saveMsg" class="mut"></p></div></div>
 <script>
-const SB_URL='https://ogelfqdoilzohwhpjqug.supabase.co';
-const SB_KEY='sb_publishable_XC3UGoOyuis0FcijJ63mZA_APSYkDFd';
-let session=JSON.parse(localStorage.getItem('kb_session')||'null');
-let profile=null, linkedAthletes=[], currentWorkout=null;
-let timerInt=null, remaining=0, elapsed=0, reps=0, running=false;
-
-function msg(id,t){document.getElementById(id).textContent=t||''}
-function hdr(auth=true){const h={'apikey':SB_KEY,'Content-Type':'application/json'};if(auth&&session?.access_token)h.Authorization='Bearer '+session.access_token;return h}
-async function api(path,opt={}){const r=await fetch(SB_URL+path,{...opt,headers:{...hdr(opt.auth!==false),...(opt.headers||{})}});const txt=await r.text();let data=null;try{data=txt?JSON.parse(txt):null}catch{data=txt}if(!r.ok)throw new Error(data?.msg||data?.message||data?.error_description||data?.hint||txt||('HTTP '+r.status));return data}
-function toggleRegister(){document.getElementById('registerBox').classList.toggle('hidden')}
-async function registerUser(){try{msg('authMsg','Tworzę konto...');const body={email:email.value.trim(),password:password.value,data:{role:role.value,display_name:displayName.value.trim()||email.value.trim()}};const d=await api('/auth/v1/signup',{method:'POST',body:JSON.stringify(body),auth:false});msg('authMsg',d?.session?'Konto utworzone. Loguję...':'Konto utworzone. Jeśli Supabase wymaga potwierdzenia e-mail, potwierdź wiadomość i zaloguj się.');if(d?.access_token){session=d;saveSession();await boot()}}catch(e){msg('authMsg','Błąd: '+e.message)}}
-async function login(){try{msg('authMsg','Logowanie...');const d=await api('/auth/v1/token?grant_type=password',{method:'POST',body:JSON.stringify({email:email.value.trim(),password:password.value}),auth:false});session=d;saveSession();await boot()}catch(e){msg('authMsg','Błąd: '+e.message)}}
-function saveSession(){localStorage.setItem('kb_session',JSON.stringify(session))}
-function logout(){localStorage.removeItem('kb_session');session=null;profile=null;location.reload()}
-async function boot(){if(!session?.access_token)return;try{const u=session.user?.id;const p=await api('/rest/v1/profiles?id=eq.'+encodeURIComponent(u)+'&select=*');profile=p?.[0];if(!profile)throw new Error('Brak profilu');authBox.classList.add('hidden');appBox.classList.remove('hidden');who.textContent=profile.display_name||session.user?.email||'Użytkownik';roleLabel.textContent=profile.role==='coach'?'Trener':'Zawodnik';if(profile.role==='coach'){coachNav.classList.remove('hidden');athleteNav.classList.add('hidden');showTab('coachAthletes',coachNav.children[0]);await loadAthletes()}else{athleteNav.classList.remove('hidden');coachNav.classList.add('hidden');athleteId.textContent=session.user.id;showTab('athleteHome',athleteNav.children[0]);await loadAthleteWorkouts();await loadHistory()}}catch(e){msg('authMsg','Sesja wygasła: '+e.message);logout()}}
-function showTab(id,btn){document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));if(btn)btn.classList.add('active')}
-
-async function loadAthleteWorkouts(){try{const uid=session.user.id;const data=await api('/rest/v1/workouts?athlete_id=eq.'+uid+'&status=eq.planned&order=scheduled_for.asc&select=*');if(!data.length){athleteWorkoutList.innerHTML='<div class="muted">Brak zaplanowanych treningów od trenera.</div>';return}athleteWorkoutList.innerHTML=data.map(w=>`<div class="listitem"><div><b>${w.scheduled_for} • ${esc(w.title)}</b> <span class="badge">${w.kettlebell_kg||''} kg</span></div><div class="muted">${w.duration_seconds?Math.round(w.duration_seconds/60)+' min':''} ${w.target_rpm?'• '+w.target_rpm+'/min':''} ${w.target_reps?'• cel '+w.target_reps:''}</div><div>${esc(w.instructions||'')}</div><button class="btn ok full" style="margin-top:8px" onclick='startAssigned(${JSON.stringify(w)})'>START</button></div>`).join('')}catch(e){athleteWorkoutList.innerHTML='<div class="warn">Błąd: '+esc(e.message)+'</div>'}}
-function startAssigned(w){currentWorkout=w;remaining=w.duration_seconds||600;elapsed=0;reps=0;running=false;timerTitle.textContent=w.title;timerMeta.textContent=`${w.kettlebell_kg||''} kg • cel ${w.target_reps||'-'} • ${w.target_rpm||'-'}/min`;repCount.textContent='0';saveResultBox.classList.add('hidden');timerStart.textContent='START';updateTimer();timer.classList.add('show')}
-function closeTimer(){if(timerInt)clearInterval(timerInt);timerInt=null;running=false;timer.classList.remove('show')}
-function updateTimer(){const m=Math.floor(remaining/60),s=remaining%60;timerTime.textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')}
-function toggleTimer(){if(running){clearInterval(timerInt);timerInt=null;running=false;timerStart.textContent='WZNÓW'}else{running=true;timerStart.textContent='PAUZA';timerInt=setInterval(()=>{if(remaining>0){remaining--;elapsed++;updateTimer()}else finishTimer()},1000)}}
-function changeReps(x){reps=Math.max(0,reps+x);repCount.textContent=reps}
-function finishTimer(){if(timerInt)clearInterval(timerInt);timerInt=null;running=false;saveResultBox.classList.remove('hidden');resultLeft.value=Math.floor(reps/2);resultRight.value=reps-Math.floor(reps/2)}
-async function saveResult(){try{const body={workout_id:currentWorkout.id,athlete_id:session.user.id,reps:reps,duration_seconds:elapsed,left_reps:+resultLeft.value||null,right_reps:+resultRight.value||null,rpe:+resultRpe.value||null,limiter:resultLimiter.value,notes:resultNotes.value.trim()};await api('/rest/v1/workout_results',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify(body)});closeTimer();await loadAthleteWorkouts();await loadHistory();alert('Wynik wysłany trenerowi.')}catch(e){alert('Błąd zapisu: '+e.message)}}
-async function loadHistory(){if(profile?.role!=='athlete')return;try{const d=await api('/rest/v1/workout_results?athlete_id=eq.'+session.user.id+'&order=completed_at.desc&limit=30&select=*');historyList.innerHTML=d.length?d.map(r=>`<div class="listitem"><b>${new Date(r.completed_at).toLocaleDateString()}</b> • ${r.reps||0} powt. • RPE ${r.rpe??'-'}<div class="muted">${r.duration_seconds?Math.round(r.duration_seconds/60*10)/10+' min':''} ${esc(r.limiter||'')}</div><div>${esc(r.notes||'')}</div></div>`).join(''):'<div class="muted">Brak wyników.</div>'}catch(e){historyList.innerHTML='<div class="warn">'+esc(e.message)+'</div>'}}
-
-async function linkAthlete(){try{const athlete=newAthleteId.value.trim();if(!athlete)throw new Error('Wpisz ID zawodnika');await api('/rest/v1/coach_athletes',{method:'POST',headers:{Prefer:'resolution=ignore-duplicates,return=minimal'},body:JSON.stringify({coach_id:session.user.id,athlete_id:athlete})});msg('coachMsg','Zawodnik dodany.');newAthleteId.value='';await loadAthletes()}catch(e){msg('coachMsg','Błąd: '+e.message)}}
-async function loadAthletes(){if(profile?.role!=='coach')return;try{const links=await api('/rest/v1/coach_athletes?coach_id=eq.'+session.user.id+'&select=athlete_id');linkedAthletes=[];for(const l of links){let name=l.athlete_id;try{const p=await api('/rest/v1/profiles?id=eq.'+l.athlete_id+'&select=id,display_name,email');if(p?.[0])name=p[0].display_name||p[0].email||name}catch{}linkedAthletes.push({id:l.athlete_id,name})}athletesList.innerHTML=linkedAthletes.length?linkedAthletes.map(a=>`<div class="listitem"><b>${esc(a.name)}</b><div class="small code">${a.id}</div></div>`).join(''):'<div class="muted">Brak zawodników.</div>';coachAthleteSelect.innerHTML=linkedAthletes.map(a=>`<option value="${a.id}">${esc(a.name)}</option>`).join('');if(!scheduledFor.value)scheduledFor.value=new Date().toISOString().slice(0,10)}catch(e){athletesList.innerHTML='<div class="warn">Błąd: '+esc(e.message)+'</div>'}}
-async function createWorkout(){try{const athlete=coachAthleteSelect.value;if(!athlete)throw new Error('Najpierw dodaj zawodnika');const body={athlete_id:athlete,coach_id:session.user.id,scheduled_for:scheduledFor.value,title:wTitle.value.trim()||'Trening',kettlebell_kg:+wKg.value||null,duration_seconds:+wDuration.value||null,target_reps:+wTargetReps.value||null,sets:+wSets.value||1,rest_seconds:+wRest.value||0,target_rpm:+wRpm.value||null,hand_switch_rule:wSwitch.value.trim(),instructions:wInstructions.value.trim(),status:'planned'};await api('/rest/v1/workouts',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify(body)});msg('planMsg','Trening zapisany i dostępny u zawodnika.')}catch(e){msg('planMsg','Błąd: '+e.message)}}
-async function loadCoachResults(){try{if(!linkedAthletes.length)await loadAthletes();let out=[];for(const a of linkedAthletes){try{const r=await api('/rest/v1/workout_results?athlete_id=eq.'+a.id+'&order=completed_at.desc&limit=10&select=*');r.forEach(x=>out.push({...x,athleteName:a.name}))}catch{}}out.sort((a,b)=>new Date(b.completed_at)-new Date(a.completed_at));coachResultsList.innerHTML=out.length?out.map(r=>`<div class="listitem"><b>${esc(r.athleteName)}</b> • ${new Date(r.completed_at).toLocaleDateString()}<div>${r.reps||0} powt. • RPE ${r.rpe??'-'} • ${esc(r.limiter||'')}</div><div class="muted">${esc(r.notes||'')}</div></div>`).join(''):'<div class="muted">Brak wyników.</div>'}catch(e){coachResultsList.innerHTML='<div class="warn">'+esc(e.message)+'</div>'}}
-function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-if(session?.access_token)boot();
-</script>
-</body>
-</html>
+const URL='https://ogelfqdoilzohwhpjqug.supabase.co',KEY='sb_publishable_XC3UGoOyuis0FcijJ63mZA_APSYkDFd';
+const months=['Wrzesień','Październik','Listopad','Grudzień','Styczeń','Luty','Marzec'];
+const raw=[[6,17,6,1,13,2,19],[6,18,6,1,14,2,20],[7,17,4,1.5,15,2.5,20],[7,18,5,1,12,2,20],[7,18,5,1.5,14,2.5,20],[8,17,4,2,14,2.5,20],[8,18,4,2,15,3,20],[8,18,4,1.5,13,2,20],[8,18,4,2,15,3,20],[8,19,4,2,15,3,21],[9,18,3,2.5,15,3,21],[8,18,4,1.5,13,2,20],[9,18,3,2.5,15,3,21],[9,19,3,3,15,3,21],[10,18,3,3,15,3,21],[8,18,4,1.5,13,2,20],[10,19,3,3,16,3,21],[10,19,3,3,16,3,22],[10,20,2,4,15,4,21],[8,18,4,1.5,13,2,20],[10,20,2,4,16,4,22],[10,21,2,4,16,4,22],[10,21,1,5,15,5,22],[8,19,4,1.5,13,2,20],[10,20,3,1.5,12,3,21],[10,22,2,1,12,2,20]];
+const plans={};raw.forEach((x,i)=>{let m=i<4?0:i<8?1:i<12?2:i<16?3:i<20?4:i<24?5:6,[aMin,aP,bSets,bMin,bP,cMin,cP]=x;plans[i+1]={month:months[m],A:{kg:24,dur:aMin*60,pace:aP,sw:aMin*30,text:`24 kg – ${aMin} min, 1 zmiana w połowie`,target:Math.round(aMin*aP)},B:{kg:28,dur:bMin*60,pace:bP,sw:0,text:`28 kg – ${bSets}×${bMin} min`,target:`${bP}/min`},C:{kg:24,dur:cMin*60,pace:cP,sw:cMin*30,text:`24 kg – interwał ${cMin} min`,target:`${Math.round(cMin*cP)}/serię`}}});
+let session=null,user=null,profile=null,coachWorkouts=[],active=null,tick=null,running=false,leftSec=0,totalSec=0,elapsed=0,count=0,right=false;
+const $=x=>document.getElementById(x);function headers(auth=true){let h={'apikey':KEY,'Content-Type':'application/json'};if(auth&&session?.access_token)h.Authorization='Bearer '+session.access_token;return h}
+function discoverSession(){try{let s=JSON.parse(localStorage.getItem('kb220_session')||'null');if(s?.access_token)return s;for(let i=0;i<localStorage.length;i++){let k=localStorage.key(i),v=localStorage.getItem(k);try{let j=JSON.parse(v);if(j?.access_token&&j?.refresh_token)return j;if(j?.currentSession?.access_token)return j.currentSession}catch(e){}}}catch(e){}return null}
+async function login(){let r=await fetch(URL+'/auth/v1/token?grant_type=password',{method:'POST',headers:headers(false),body:JSON.stringify({email:$('email').value.trim(),password:$('pass').value})}),j=await r.json();if(!r.ok){$('authMsg').textContent=j.error_description||j.msg||'Błąd logowania';return}session=j;localStorage.setItem('kb220_session',JSON.stringify(j));await boot()}
+function logout(){localStorage.removeItem('kb220_session');location.reload()}
+async function api(path,opt={}){let r=await fetch(URL+'/rest/v1/'+path,{...opt,headers:{...headers(),...(opt.headers||{})}});if(!r.ok)throw new Error(await r.text());if(r.status===204)return null;let t=await r.text();return t?JSON.parse(t):null}
+async function boot(){session=session||discoverSession();if(!session){$('auth').classList.remove('hidden');return}$('auth').classList.add('hidden');$('app').classList.remove('hidden');user=session.user||await fetch(URL+'/auth/v1/user',{headers:headers()}).then(r=>r.json());let p=await api('profiles?id=eq.'+user.id+'&select=*');profile=p?.[0]||{};$('name').textContent=profile.display_name||user.email;$('role').textContent=profile.role==='coach'?'Trener':'Zawodnik';$('athleteId').value=user.id;initPlan();await loadCoach();await loadHistory()}
+function initPlan(){let now=new Date(),start=new Date('2026-09-07T00:00:00'),w=Math.max(1,Math.min(26,Math.floor((now-start)/604800000)+1));for(let i=1;i<=26;i++)$('week').innerHTML+=`<option value="${i}" ${i===w?'selected':''}>Tydzień ${i} – ${plans[i].month}</option>`;$('week').onchange=renderBase;$('session').onchange=renderBase;renderBase();let h='';for(let i=1;i<=26;i++){let p=plans[i];h+=`<div class="wk"><b>Tydzień ${i} – ${p.month}</b><br>A: ${p.A.text} • ${p.A.pace}/min<br>B: ${p.B.text} • ${p.B.pace}/min<br>C: ${p.C.text} • ${p.C.pace}/min</div>`}$('fullPlan').innerHTML=h}
+function renderBase(){let w=+$('week').value||1,s=$('session').value,p=plans[w][s];$('baseBox').innerHTML=`<b>${p.text}</b><br><span class="pill">${p.kg} kg</span><span class="pill">${p.pace}/min</span><span class="pill">cel ${p.target}</span>`}
+async function loadCoach(){if(profile.role==='coach'){$('coachBox').innerHTML='To konto trenera. Do zarządzania zawodnikami użyj panelu WWW.';return}try{coachWorkouts=await api('workouts?athlete_id=eq.'+user.id+'&status=eq.planned&order=scheduled_for.asc&select=*');if(!coachWorkouts.length){$('coachBox').innerHTML='Brak zaplanowanych treningów od trenera.';return}let w=coachWorkouts[0];$('coachBox').innerHTML=`<b>${w.scheduled_for||''} • ${w.title}</b><br><span class="pill">${w.kettlebell_kg||24} kg</span><span class="pill">${Math.round((w.duration_seconds||w.duration_sec||600)/60*10)/10} min</span><span class="pill">${w.target_rpm||w.target_pace||'-'}/min</span><p>${w.instructions||w.coach_note||''}</p><button class="btn green big" onclick="startCoach(0)">▶ START TRENINGU OD TRENERA</button>`}catch(e){$('coachBox').textContent='Nie udało się pobrać treningów: '+e.message}}
+function startBase(){let week=+$('week').value,s=$('session').value,p=plans[week][s];openTimer({source:'base',week,session:s,kg:p.kg,dur:p.dur,pace:p.pace,sw:p.sw,title:`Tydzień ${week} • ${s} • ${p.text}`})}
+function startCoach(i){let w=coachWorkouts[i],dur=w.duration_seconds||w.duration_sec||600,sw=w.hand_switch_sec||Math.round(dur/2);openTimer({source:'coach',workout_id:w.id,kg:w.kettlebell_kg||24,dur,pace:w.target_rpm||w.target_pace||0,sw,title:w.title||'Trening od trenera'})}
+function openTimer(a){active=a;totalSec=a.dur;leftSec=a.dur;elapsed=0;count=0;right=false;running=false;$('timerTitle').textContent=a.title;$('timerTarget').textContent=`${a.kg} kg • ${a.pace||'-'}/min`;$('reps').textContent='0';$('saveBox').classList.add('hidden');updateTimer();$('timer').classList.add('on')}
+function fmt(s){s=Math.max(0,Math.round(s));return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}function updateTimer(){$('clock').textContent=fmt(leftSec);$('hand').textContent=right?'PRAWA RĘKA':'LEWA RĘKA';$('hand').style.color=right?'var(--blue)':'var(--yel)';$('play').textContent=running?'PAUZA':'START'}
+function toggleTimer(){if(running){clearInterval(tick);running=false;updateTimer();return}running=true;updateTimer();tick=setInterval(()=>{leftSec--;elapsed++;if(active.sw&&elapsed>=active.sw&&!right){right=true;navigator.vibrate?.([200,100,200])}if(leftSec<=0){clearInterval(tick);running=false;finishTimer()}updateTimer()},1000)}function switchHand(){right=!right;navigator.vibrate?.(150);updateTimer()}function rep(n){count=Math.max(0,count+n);$('reps').textContent=count}function resetTimer(){clearInterval(tick);running=false;leftSec=totalSec;elapsed=0;count=0;right=false;$('reps').textContent=0;updateTimer()}function closeTimer(){clearInterval(tick);running=false;$('timer').classList.remove('on')}function finishTimer(){clearInterval(tick);running=false;$('saveReps').value=count;$('saveLeft').value=Math.ceil(count/2);$('saveRight').value=Math.floor(count/2);$('saveBox').classList.remove('hidden');updateTimer()}
+async function saveWorkout(){let body={athlete_id:user.id,workout_id:active.workout_id||null,source:active.source,week_no:active.week||null,session_code:active.session||null,kettlebell_kg:active.kg,duration_seconds:elapsed||totalSec-leftSec,reps:+$('saveReps').value||count,left_reps:+$('saveLeft').value||null,right_reps:+$('saveRight').value||null,rpe:+$('saveRpe').value||null,notes:$('saveNotes').value||null};try{await api('training_logs',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify(body)});$('saveMsg').textContent='✓ Zapisano w chmurze';setTimeout(()=>{closeTimer();loadHistory()},700)}catch(e){$('saveMsg').textContent='Błąd zapisu: '+e.message}}
+async function loadHistory(){if(!user)return;try{let a=await api('training_logs?athlete_id=eq.'+user.id+'&order=completed_at.desc&limit=100&select=*');if(!a.length){$('histBox').innerHTML='Brak zapisanych treningów w chmurze.';return}$('histBox').innerHTML=a.map(x=>`<div class="history-row"><b>${new Date(x.completed_at).toLocaleDateString('pl-PL')} • ${x.kettlebell_kg||'-'} kg • ${x.reps||0} powt.</b><br><span class="mut">${x.source==='coach'?'Trener':'Plan bazowy'}${x.week_no?' • tydz. '+x.week_no+' '+(x.session_code||''):''} • ${fmt(x.duration_seconds||0)} • RPE ${x.rpe||'-'}</span>${x.notes?'<br>'+x.notes:''}</div>`).join('')}catch(e){$('histBox').textContent='Błąd historii: '+e.message}}
+function showTab(id,b){document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));$(id).classList.add('on');document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('on'));b.classList.add('on');if(id==='history')loadHistory()}
+boot();
+</script></body></html>
