@@ -1,1 +1,1 @@
-Trigger APK build 2026-09-09 coach-v2 icon-kettlebell
+Trigger APK build 2026-09-09 restore-base-plan-cloud-history
