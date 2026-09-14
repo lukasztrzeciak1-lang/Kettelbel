@@ -61,10 +61,19 @@
       }
     }catch(e){}
   }
+  function loadSportModule(){
+    if(document.getElementById('kbSportScript'))return;
+    const s=document.createElement('script');
+    s.id='kbSportScript';
+    s.src='sports.js';
+    s.defer=true;
+    document.body.appendChild(s);
+  }
   window.kbPersistenceRestore=function(){
     restoreBase();
     renderCoachCache();
     hookCoach();
+    loadSportModule();
     setTimeout(cacheCoach,1200);
     setTimeout(cacheCoach,3000);
   };
