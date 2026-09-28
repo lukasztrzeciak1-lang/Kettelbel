@@ -47,6 +47,12 @@ public class MainActivity extends Activity {
   }
 
   @Override public void onBackPressed(){
-    if(web.canGoBack()) web.goBack(); else super.onBackPressed();
+    web.evaluateJavascript(
+      "(window.kbSport&&window.kbSport.back&&window.kbSport.back())?'1':'0'",
+      value -> {
+        if("1".equals(value) || "\"1\"".equals(value)) return;
+        if(web.canGoBack()) web.goBack(); else MainActivity.super.onBackPressed();
+      }
+    );
   }
 }
