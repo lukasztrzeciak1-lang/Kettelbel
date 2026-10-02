@@ -2,6 +2,8 @@ package pl.best.kettlebell220;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.content.Intent;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -33,6 +35,7 @@ public class MainActivity extends Activity {
     setContentView(web);
     web.getSettings().setJavaScriptEnabled(true);
     web.getSettings().setDomStorageEnabled(true);
+    web.addJavascriptInterface(new NativeBridge(), "Native");
     web.setWebChromeClient(new WebChromeClient());
     web.setWebViewClient(new WebViewClient(){
       @Override public void onPageFinished(WebView view, String url){
@@ -44,6 +47,13 @@ public class MainActivity extends Activity {
       }
     });
     web.loadUrl("file:///android_asset/index.html");
+  }
+
+  public class NativeBridge {
+    @JavascriptInterface
+    public void openSnatchCamera(){
+      runOnUiThread(() -> startActivity(new Intent(MainActivity.this, CameraActivity.class)));
+    }
   }
 
   @Override public void onBackPressed(){
